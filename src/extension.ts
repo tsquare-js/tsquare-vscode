@@ -57,7 +57,9 @@ export function activate(context: vscode.ExtensionContext) {
   // ── Commands ──
   /** The document a command acts on: the active tsquare editor, else the active preview's source. */
   const target = async (uri?: vscode.Uri) => {
-    if (uri instanceof vscode.Uri) return vscode.workspace.openTextDocument(uri);
+    // Menus pass the clicked resource: a .tsq file from the Explorer, but the panel itself
+    // (webview-panel:…) from the preview's title bar and … menu, which isn't a document.
+    if (uri instanceof vscode.Uri && uri.scheme !== "webview-panel") return vscode.workspace.openTextDocument(uri);
     const editor = vscode.window.activeTextEditor;
     if (editor && isTsquare(editor.document)) return editor.document;
     return previews.activeDocument();
