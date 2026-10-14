@@ -26,8 +26,6 @@ Open this folder in VS Code and press F5. That opens a second window with the ex
 
 Tests: `npm test` runs the typecheck, the grammar test (`test/grammar.mjs`, with VS Code's TextMate engine) and an integration test in your installed VS Code (`test/run.mjs`: a throwaway profile, nothing downloaded; set `VSCODE_BIN` to use another build). CI runs the first two.
 
-**Until tsquare's next release:** `package.json` points `tsquare` at a local checkout (`file:../wireframe`), because `tsquare/viewer`, `languageData` and the `default` export condition aren't published yet. Pin the release once it's out; CI can't install the local path.
-
 ## Not done yet
 
 - **Packaging:** a VSIX with the dependencies bundled and the Inter font files shipped beside it.

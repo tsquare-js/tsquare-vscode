@@ -86,12 +86,12 @@
       },
       {
         "command": "tsquare.exportSvg",
-        "title": "Export SVG\u2026",
+        "title": "Export SVG…",
         "category": "tsquare"
       },
       {
         "command": "tsquare.exportPng",
-        "title": "Export PNG\u2026",
+        "title": "Export PNG…",
         "category": "tsquare"
       },
       {
@@ -191,7 +191,7 @@
     ]
   },
   "dependencies": {
-    "tsquare": "file:../wireframe"
+    "tsquare": "0.9.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

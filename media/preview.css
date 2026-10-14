@@ -29,10 +29,10 @@ body {
 .screens button[aria-pressed="true"] { background: var(--vscode-button-background); color: var(--vscode-button-foreground); }
 .screens button:focus-visible, .problems:focus-visible { outline: 1px solid var(--vscode-focusBorder); outline-offset: 1px; }
 
-/* The board */
-.stage { flex: 1; min-height: 0; overflow: hidden; position: relative; cursor: grab; touch-action: none; }
+/* The board. tsquare/viewer sets what its zoom math needs (clipping, the canvas's
+   placement and transform origin, touch handling); this is sizing and looks. */
+.stage { flex: 1; min-height: 0; position: relative; cursor: grab; } /* relative: for .empty, before the viewer runs */
 .stage.panning { cursor: grabbing; }
-.stage .canvas { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
 .stage .canvas img { display: block; user-select: none; -webkit-user-drag: none; transition: opacity .15s; border-radius: 4px; box-shadow: 0 0 0 1px var(--vscode-widget-border, transparent); }
 .stage.stale .canvas img { opacity: .35; }
 .stage .empty { position: absolute; inset: 0; display: grid; place-items: center; color: var(--vscode-descriptionForeground); }
