@@ -2,6 +2,7 @@
 const vscode = require("vscode");
 const assert = require("node:assert/strict");
 const path = require("node:path");
+const { encodeWireframe } = require("tsquare");
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function until(fn, what, ms = 8000) {
@@ -72,20 +73,22 @@ exports.run = async function run() {
     await vscode.commands.executeCommand("undo");
   });
 
-  await test("preview menu commands work: the title bar and … menu pass the panel itself, not a file", async () => {
-    // Like the menus: VS Code passes the active editor's resource, here the webview panel's
+  await test("preview menu commands act on the previewed file: the title bar and … menu pass the panel, not a file", async () => {
+    // Like the menus: VS Code passes the clicked editor's resource, here the webview panel's
     const panelUri = vscode.Uri.parse("webview-panel:webview-panel/webview-tsquare.preview-test");
     const source = await vscode.workspace.openTextDocument(path.join(examples, "sign-in.tsq"));
     await vscode.window.showTextDocument(source, vscode.ViewColumn.One);
     await vscode.commands.executeCommand("tsquare.showPreviewToSide");
     await until(() => ext.exports.lastPreview()?.width, "a render");
-    await vscode.commands.executeCommand("workbench.action.focusSecondEditorGroup");
-    await until(() => !vscode.window.activeTextEditor, "the preview to have focus");
+    // Focus is elsewhere on purpose (a plain-text file, so the preview stays on sign-in): a command from the
+    // preview's own menu means that preview, whatever has focus. The test window often isn't focused anyway.
+    const notes = await vscode.workspace.openTextDocument({ language: "plaintext", content: "notes" });
+    await vscode.window.showTextDocument(notes, vscode.ViewColumn.Three);
     await vscode.env.clipboard.writeText("");
     await vscode.commands.executeCommand("tsquare.copyImageLink", panelUri);
-    assert.match(await vscode.env.clipboard.readText(), /^https:\/\/tsquare\.dev\/svg\/y/, "Copy Image Link copied a link for the previewed file");
+    assert.equal(await vscode.env.clipboard.readText(), `https://tsquare.dev/svg/${encodeWireframe(source.getText())}`, "the link is sign-in's");
     await vscode.commands.executeCommand("tsquare.showSource", panelUri);
-    await until(() => vscode.window.activeTextEditor?.document.uri.fsPath === source.uri.fsPath, "Show Source to open the previewed file");
+    await until(() => vscode.window.activeTextEditor?.document.uri.fsPath === source.uri.fsPath, "Show Source to open sign-in.tsq");
   });
 
   console.log("\n" + results.join("\n") + "\n");

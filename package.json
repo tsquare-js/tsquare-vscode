@@ -191,7 +191,7 @@
     ]
   },
   "dependencies": {
-    "tsquare": "0.9.0"
+    "tsquare": "0.9.1"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
