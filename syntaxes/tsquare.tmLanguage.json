@@ -1,0 +1,72 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "tsquare",
+  "scopeName": "source.tsquare",
+  "comment": "Same rules as the playground's highlighter (src/playground/editor.ts in the tsquare repo): one element per line; a comment is a whole line starting with #; anywhere else # is text.",
+  "patterns": [
+    { "include": "#comment" },
+    { "include": "#fence" },
+    { "include": "#element" }
+  ],
+  "repository": {
+    "comment": {
+      "match": "^\\s*(#).*$",
+      "name": "comment.line.number-sign.tsquare",
+      "captures": { "1": { "name": "punctuation.definition.comment.tsquare" } }
+    },
+    "fence": {
+      "match": "^\\s*```.*$",
+      "name": "comment.line.fence.tsquare"
+    },
+    "element": {
+      "begin": "^\\s*([A-Za-z][\\w-]*)",
+      "beginCaptures": { "1": { "name": "entity.name.type.tsquare" } },
+      "end": "$",
+      "patterns": [{ "include": "#argument" }]
+    },
+    "argument": {
+      "patterns": [
+        { "include": "#string" },
+        {
+          "match": "([\\w-]+)\\s*([=:])\\s*(#[0-9a-fA-F]{3,8})(?![\\w-])",
+          "captures": {
+            "1": { "name": "entity.other.attribute-name.tsquare" },
+            "2": { "name": "keyword.operator.assignment.tsquare" },
+            "3": { "name": "constant.other.color.rgb-value.hex.tsquare" }
+          }
+        },
+        {
+          "match": "([\\w-]+)\\s*([=:])",
+          "captures": {
+            "1": { "name": "entity.other.attribute-name.tsquare" },
+            "2": { "name": "keyword.operator.assignment.tsquare" }
+          }
+        },
+        { "match": "->", "name": "keyword.operator.arrow.tsquare" },
+        { "match": "(?<![\\w-])#[A-Za-z][\\w-]*(?![\\w-])", "name": "entity.name.label.tsquare" },
+        { "match": "(?<![\\w-])-?\\d+(\\.\\d+)?(?![\\w-])", "name": "constant.numeric.tsquare" },
+        { "match": "(?<![\\w-])(true|false|null)(?![\\w-])", "name": "constant.language.tsquare" },
+        { "match": "[\\[\\]]", "name": "punctuation.section.brackets.tsquare" },
+        { "match": "[{}]", "name": "punctuation.section.braces.tsquare" },
+        { "match": ",", "name": "punctuation.separator.comma.tsquare" },
+        { "match": "[^\\s,=:\\[\\]{}\"]+", "name": "support.constant.tsquare" }
+      ]
+    },
+    "string": {
+      "patterns": [
+        {
+          "begin": "(?<![\\w])\"",
+          "end": "\"|$",
+          "name": "string.quoted.double.tsquare",
+          "patterns": [{ "match": "\\\\.", "name": "constant.character.escape.tsquare" }]
+        },
+        {
+          "begin": "(?<![\\w])'",
+          "end": "'|$",
+          "name": "string.quoted.single.tsquare",
+          "patterns": [{ "match": "\\\\.", "name": "constant.character.escape.tsquare" }]
+        }
+      ]
+    }
+  }
+}

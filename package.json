@@ -1,0 +1,204 @@
+{
+  "name": "tsquare-vscode",
+  "displayName": "tsquare",
+  "description": "Highlighting, problems and a live preview for tsquare wireframes (.tsq).",
+  "version": "0.0.1",
+  "publisher": "tsquare-js",
+  "private": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tsquare-js/tsquare-vscode"
+  },
+  "homepage": "https://tsquare.dev",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Visualization"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onWebviewPanel:tsquare.preview"
+  ],
+  "scripts": {
+    "build": "node build.mjs",
+    "watch": "node build.mjs --watch",
+    "typecheck": "tsc -p .",
+    "test:grammar": "node test/grammar.mjs",
+    "test:vscode": "npm run build && node test/run.mjs",
+    "test": "npm run typecheck && npm run test:grammar && npm run test:vscode"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "tsquare",
+        "aliases": [
+          "tsquare"
+        ],
+        "extensions": [
+          ".tsq"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./media/tsquare.svg",
+          "dark": "./media/tsquare.svg"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "tsquare",
+        "scopeName": "source.tsquare",
+        "path": "./syntaxes/tsquare.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "tsquare.showPreviewToSide",
+        "title": "Open Preview to the Side",
+        "category": "tsquare",
+        "icon": "$(open-preview)"
+      },
+      {
+        "command": "tsquare.showPreview",
+        "title": "Open Preview",
+        "category": "tsquare",
+        "icon": "$(open-preview)"
+      },
+      {
+        "command": "tsquare.showSource",
+        "title": "Show Source",
+        "category": "tsquare",
+        "icon": "$(go-to-file)"
+      },
+      {
+        "command": "tsquare.copyImageLink",
+        "title": "Copy Image Link",
+        "category": "tsquare",
+        "icon": "$(link)"
+      },
+      {
+        "command": "tsquare.openInPlayground",
+        "title": "Open in Playground",
+        "category": "tsquare"
+      },
+      {
+        "command": "tsquare.exportSvg",
+        "title": "Export SVG\u2026",
+        "category": "tsquare"
+      },
+      {
+        "command": "tsquare.exportPng",
+        "title": "Export PNG\u2026",
+        "category": "tsquare"
+      },
+      {
+        "command": "tsquare.fit",
+        "title": "Fit to Window",
+        "category": "tsquare"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "tsquare.showPreviewToSide",
+          "when": "editorLangId == tsquare",
+          "group": "navigation"
+        },
+        {
+          "command": "tsquare.showSource",
+          "when": "activeWebviewPanelId == tsquare.preview",
+          "group": "navigation"
+        },
+        {
+          "command": "tsquare.copyImageLink",
+          "when": "activeWebviewPanelId == tsquare.preview",
+          "group": "1_tsquare@1"
+        },
+        {
+          "command": "tsquare.openInPlayground",
+          "when": "activeWebviewPanelId == tsquare.preview",
+          "group": "1_tsquare@2"
+        },
+        {
+          "command": "tsquare.exportSvg",
+          "when": "activeWebviewPanelId == tsquare.preview",
+          "group": "2_export@1"
+        },
+        {
+          "command": "tsquare.exportPng",
+          "when": "activeWebviewPanelId == tsquare.preview",
+          "group": "2_export@2"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "tsquare.showPreview",
+          "when": "resourceExtname == .tsq",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "tsquare.showPreviewToSide",
+          "when": "editorLangId == tsquare"
+        },
+        {
+          "command": "tsquare.showPreview",
+          "when": "editorLangId == tsquare"
+        },
+        {
+          "command": "tsquare.showSource",
+          "when": "activeWebviewPanelId == tsquare.preview"
+        },
+        {
+          "command": "tsquare.copyImageLink",
+          "when": "editorLangId == tsquare || activeWebviewPanelId == tsquare.preview"
+        },
+        {
+          "command": "tsquare.openInPlayground",
+          "when": "editorLangId == tsquare || activeWebviewPanelId == tsquare.preview"
+        },
+        {
+          "command": "tsquare.exportSvg",
+          "when": "editorLangId == tsquare || activeWebviewPanelId == tsquare.preview"
+        },
+        {
+          "command": "tsquare.exportPng",
+          "when": "editorLangId == tsquare || activeWebviewPanelId == tsquare.preview"
+        },
+        {
+          "command": "tsquare.fit",
+          "when": "activeWebviewPanelId == tsquare.preview"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "tsquare.showPreviewToSide",
+        "key": "ctrl+k v",
+        "mac": "cmd+k v",
+        "when": "editorLangId == tsquare"
+      },
+      {
+        "command": "tsquare.showPreview",
+        "key": "ctrl+shift+v",
+        "mac": "cmd+shift+v",
+        "when": "editorLangId == tsquare"
+      }
+    ]
+  },
+  "dependencies": {
+    "tsquare": "file:../wireframe"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.90.0",
+    "esbuild": "^0.28.2",
+    "typescript": "^5.9.0",
+    "vscode-oniguruma": "^2.0.1",
+    "vscode-textmate": "^9.3.2"
+  }
+}

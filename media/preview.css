@@ -1,0 +1,59 @@
+/* Only VS Code's own theme variables, so the preview follows any theme (light, dark, high contrast). */
+html, body { height: 100%; }
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--vscode-editor-background);
+  color: var(--vscode-foreground);
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+}
+
+/* Screen chips: like VS Code's secondary buttons */
+.screens { display: flex; gap: 4px; padding: 6px 12px; flex-shrink: 0; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--vscode-panel-border, transparent); }
+.screens:empty { display: none; }
+.screens button {
+  border: 1px solid var(--vscode-button-border, transparent);
+  background: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+  border-radius: 2px;
+  padding: 2px 8px;
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.screens button:hover { background: var(--vscode-button-secondaryHoverBackground); }
+.screens button[aria-pressed="true"] { background: var(--vscode-button-background); color: var(--vscode-button-foreground); }
+.screens button:focus-visible, .problems:focus-visible { outline: 1px solid var(--vscode-focusBorder); outline-offset: 1px; }
+
+/* The board */
+.stage { flex: 1; min-height: 0; overflow: hidden; position: relative; cursor: grab; touch-action: none; }
+.stage.panning { cursor: grabbing; }
+.stage .canvas { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.stage .canvas img { display: block; user-select: none; -webkit-user-drag: none; transition: opacity .15s; border-radius: 4px; box-shadow: 0 0 0 1px var(--vscode-widget-border, transparent); }
+.stage.stale .canvas img { opacity: .35; }
+.stage .empty { position: absolute; inset: 0; display: grid; place-items: center; color: var(--vscode-descriptionForeground); }
+.stage.animate .canvas { transition: transform .25s ease; }
+
+/* "2 problems · showing the last valid render": opens the Problems panel */
+.problems {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  border: 1px solid var(--vscode-inputValidation-errorBorder);
+  background: var(--vscode-inputValidation-errorBackground);
+  color: var(--vscode-foreground);
+  border-radius: 2px;
+  padding: 4px 10px;
+  max-width: calc(100% - 24px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font: inherit;
+  cursor: pointer;
+}
+.problems[hidden] { display: none; }
