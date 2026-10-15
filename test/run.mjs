@@ -1,4 +1,5 @@
-// Runs test/suite.cjs in the installed VS Code (no download), in a throwaway profile.
+// Runs test/suite.cjs in the installed VS Code (no download), in a throwaway profile,
+// against this folder or, with EXTENSION_PATH, an unpacked VSIX.
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -12,7 +13,7 @@ const profile = mkdtempSync(path.join(tmpdir(), "tsquare-vscode-test-"));
 const env = { ...process.env };
 delete env.ELECTRON_RUN_AS_NODE;
 const r = spawnSync(code, [
-  `--extensionDevelopmentPath=${path.resolve(here, "..")}`,
+  `--extensionDevelopmentPath=${process.env.EXTENSION_PATH ?? path.resolve(here, "..")}`, // EXTENSION_PATH: an unpacked VSIX (test/vsix.mjs)
   `--extensionTestsPath=${path.join(here, "suite.cjs")}`,
   `--user-data-dir=${profile}`,
   `--extensions-dir=${path.join(profile, "extensions")}`,

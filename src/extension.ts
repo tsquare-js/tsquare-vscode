@@ -5,7 +5,7 @@
  * opens a link.
  */
 import * as vscode from "vscode";
-import { boardLayout, compileWireframe, encodeWireframe, languageData, renderWireframePng, renderWireframeSvg } from "tsquare";
+import { boardLayout, compileWireframe, encodeWireframe, languageData, renderWireframeSvg } from "tsquare";
 import { colorProvider } from "./colors.js";
 import { completionProvider } from "./completions.js";
 
@@ -82,8 +82,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.window.setStatusBarMessage("$(check) Copied the image link", 2500);
   });
   command("tsquare.openInPlayground", (doc) => vscode.env.openExternal(vscode.Uri.parse(`${BASE}/playground#${encodeWireframe(doc.getText())}`)));
-  command("tsquare.exportSvg", (doc) => exportImage(doc, "svg"));
-  command("tsquare.exportPng", (doc) => exportImage(doc, "png"));
+  command("tsquare.exportSvg", exportSvg);
   context.subscriptions.push(vscode.commands.registerCommand("tsquare.fit", () => previews.post({ type: "fit" })));
 
   context.subscriptions.push(vscode.window.registerWebviewPanelSerializer(VIEW_TYPE, {
@@ -112,16 +111,14 @@ async function valid(doc: vscode.TextDocument) {
   return false;
 }
 
-async function exportImage(doc: vscode.TextDocument, format: "svg" | "png") {
+/** Saves the board as SVG. (No PNG here: it would need a native renderer per platform; Copy Image Link gives tsquare.dev's PNG too.) */
+async function exportSvg(doc: vscode.TextDocument) {
   if (!(await valid(doc))) return;
   const { spec } = compileWireframe(doc.getText());
-  const defaultUri = doc.uri.with({ path: doc.uri.path.replace(/\.tsq$/i, "") + `.${format}` });
-  const uri = await vscode.window.showSaveDialog({ defaultUri, filters: { [format.toUpperCase()]: [format] } });
+  const defaultUri = doc.uri.with({ path: doc.uri.path.replace(/\.tsq$/i, "") + ".svg" });
+  const uri = await vscode.window.showSaveDialog({ defaultUri, filters: { SVG: ["svg"] } });
   if (!uri) return;
-  const bytes = format === "svg"
-    ? new TextEncoder().encode(await renderWireframeSvg(spec!, { skipValidation: true }))
-    : await renderWireframePng(spec!, { skipValidation: true, scale: 2 });
-  await vscode.workspace.fs.writeFile(uri, bytes);
+  await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(await renderWireframeSvg(spec!, { skipValidation: true })));
   const choice = await vscode.window.showInformationMessage(`Saved ${uri.path.split("/").pop()}`, "Open");
   if (choice) vscode.commands.executeCommand("vscode.open", uri);
 }
