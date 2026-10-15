@@ -10,7 +10,7 @@
 //   node build.mjs --production  for the VSIX: minified, plus dist/THIRD_PARTY_LICENSES.txt
 //   node build.mjs --watch
 import * as esbuild from "esbuild";
-import { copyFileSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 
@@ -56,27 +56,39 @@ const builds = [
   },
 ].map((b) => ({ bundle: true, minify: production, sourcemap: !production, logLevel: "info", ...b }));
 
-/** The license of every package bundled into dist/, for the notices their licenses ask to ship with copies. */
+/**
+ * The license of every package bundled into dist/, for the notices their licenses ask to ship
+ * with copies. One section per installed copy: two versions of a package (one nested under
+ * another package) both get theirs. A package that ships no license file needs a vendored
+ * notice in licenses/<name>.txt, with where it comes from; otherwise the build stops.
+ */
 function thirdPartyLicenses(metafiles) {
-  const packages = new Map();
+  const packages = new Map(); // directory → name
   for (const meta of metafiles) {
     for (const input of Object.keys(meta.inputs)) {
       const m = input.match(/^(.*node_modules\/((?:@[^/]+\/)?[^/]+))\//);
-      if (m) packages.set(m[2], m[1]);
+      if (m) packages.set(m[1], m[2]);
     }
   }
-  packages.set("@fontsource/inter", fontPackage); // shipped as files, not bundled
-  const sections = [...packages].sort(([a], [b]) => a.localeCompare(b)).map(([name, dir]) => {
+  packages.set(fontPackage, "@fontsource/inter"); // shipped as files, not bundled
+  const sections = [...packages].map(([dir, name]) => {
     const pkg = JSON.parse(readFileSync(path.join(dir, "package.json"), "utf8"));
     const file = readdirSync(dir).find((f) => /^(licen[cs]e|copying)(\.[\w-]+)?$/i.test(f));
-    if (!file && !pkg.license) throw new Error(`${name} has no license file and declares no license; check it by hand`);
-    const author = typeof pkg.author === "string" ? pkg.author : pkg.author?.name;
-    const text = file
-      ? readFileSync(path.join(dir, file), "utf8").trim()
-      : `${pkg.license} License${author ? `, ${author}` : ""} (declared in its package.json; the package ships no license file)`;
-    return `${name} ${pkg.version} (${pkg.license})\n${"-".repeat(72)}\n${text}\n`;
+    const vendored = `licenses/${name.replace("/", "__")}.txt`;
+    if (!file && !existsSync(vendored)) {
+      throw new Error(`${name} ${pkg.version} ships no license file: add its notice to ${vendored} (with where it comes from) after checking upstream`);
+    }
+    const text = readFileSync(file ? path.join(dir, file) : vendored, "utf8").trim();
+    // Apache-2.0 asks for a package's NOTICE file to ship too
+    const noticeFile = readdirSync(dir).find((f) => /^notice(s)?(\.[\w-]+)?$/i.test(f));
+    const notice = noticeFile ? `\n\nNOTICE\n\n${readFileSync(path.join(dir, noticeFile), "utf8").trim()}` : "";
+    // where the source is (MPL-2.0, for satori, asks to say so when shipping it minified)
+    const repo = (typeof pkg.repository === "string" ? pkg.repository : pkg.repository?.url)?.replace(/^git\+/, "").replace(/\.git$/, "").replace(/^git:\/\//, "https://");
+    const source = `Source: ${repo ?? pkg.homepage ?? `https://www.npmjs.com/package/${name}/v/${pkg.version}`} (npm: ${name}@${pkg.version})`;
+    return { name, version: pkg.version, text: `${name} ${pkg.version} (${pkg.license})\n${source}\n${"-".repeat(72)}\n${text}${notice}\n` };
   });
-  return `This extension bundles the packages below (the Inter font as files, under dist/node_modules/@fontsource/inter/).\n\n${sections.join("\n\n")}`;
+  sections.sort((a, b) => a.name.localeCompare(b.name) || a.version.localeCompare(b.version, undefined, { numeric: true }));
+  return `This extension bundles the packages below (the Inter font as files, under dist/node_modules/@fontsource/inter/).\n\n${sections.map((s) => s.text).join("\n\n")}`;
 }
 
 if (watch) {

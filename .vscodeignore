@@ -6,6 +6,7 @@ test/**
 node_modules/**
 build.mjs
 tsconfig.json
+licenses/**
 dist/**/*.map
 *.vsix
 .gitignore
