@@ -14,7 +14,7 @@ import * as vscode from "vscode";
 const COLOR_PROPS: Record<string, string[]> = { board: ["accent"], flow: ["color"] };
 
 /** key=#rrggbb or key="#rrggbb"; tsquare accepts only six-digit hex. */
-const HEX_VALUE = /(?<=^|\s)([\w-]+)\s*[=:]\s*("?)(#[0-9a-fA-F]{6})\2(?![\w-])/g;
+const HEX_VALUE = /(?<=^|\s)([\w-]+)\s*[=:]\s*(["']?)(#[0-9a-fA-F]{6})\2(?![\w-])/g;
 
 const toColor = (hex: string) =>
   new vscode.Color(...([1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255) as [number, number, number]), 1);
