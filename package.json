@@ -6,9 +6,13 @@
   "publisher": "tsquare-js",
   "private": true,
   "license": "MIT",
+  "icon": "media/icon.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/tsquare-js/tsquare-vscode"
+  },
+  "bugs": {
+    "url": "https://github.com/tsquare-js/tsquare-vscode/issues"
   },
   "homepage": "https://tsquare.dev",
   "engines": {
@@ -25,9 +29,12 @@
   "scripts": {
     "build": "node build.mjs",
     "watch": "node build.mjs --watch",
+    "vscode:prepublish": "node build.mjs --production",
+    "package": "vsce package --no-dependencies",
     "typecheck": "tsc -p .",
     "test:grammar": "node test/grammar.mjs",
     "test:vscode": "npm run build && node test/run.mjs",
+    "test:vsix": "node test/vsix.mjs",
     "test": "npm run typecheck && npm run test:grammar && npm run test:vscode"
   },
   "contributes": {
@@ -90,11 +97,6 @@
         "category": "tsquare"
       },
       {
-        "command": "tsquare.exportPng",
-        "title": "Export PNG…",
-        "category": "tsquare"
-      },
-      {
         "command": "tsquare.fit",
         "title": "Fit to Window",
         "category": "tsquare"
@@ -126,11 +128,6 @@
           "command": "tsquare.exportSvg",
           "when": "activeWebviewPanelId == tsquare.preview",
           "group": "2_export@1"
-        },
-        {
-          "command": "tsquare.exportPng",
-          "when": "activeWebviewPanelId == tsquare.preview",
-          "group": "2_export@2"
         }
       ],
       "explorer/context": [
@@ -166,10 +163,6 @@
           "when": "editorLangId == tsquare || activeWebviewPanelId == tsquare.preview"
         },
         {
-          "command": "tsquare.exportPng",
-          "when": "editorLangId == tsquare || activeWebviewPanelId == tsquare.preview"
-        },
-        {
           "command": "tsquare.fit",
           "when": "activeWebviewPanelId == tsquare.preview"
         }
@@ -190,13 +183,12 @@
       }
     ]
   },
-  "dependencies": {
-    "tsquare": "0.9.1"
-  },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@types/vscode": "^1.90.0",
+    "@vscode/vsce": "4.0.0",
     "esbuild": "^0.28.2",
+    "tsquare": "0.9.1",
     "typescript": "^5.9.0",
     "vscode-oniguruma": "^2.0.1",
     "vscode-textmate": "^9.3.2"

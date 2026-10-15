@@ -1,0 +1,11 @@
+# The VSIX ships dist/ (bundled), the manifest and its assets. Everything else stays out.
+.github/**
+.vscode/**
+src/**
+test/**
+node_modules/**
+build.mjs
+tsconfig.json
+dist/**/*.map
+*.vsix
+.gitignore
