@@ -73,6 +73,28 @@ exports.run = async function run() {
     await vscode.commands.executeCommand("undo");
   });
 
+  await test("colors: swatches only on the hex values tsquare reads as colors (board accent, flow color)", async () => {
+    const d = await vscode.workspace.openTextDocument({ language: "tsquare", content: [
+      'board "C" accent=#1a73e8',
+      '  screen phone "A" #a',
+      '    table columns=[Order, Total] data=[["#1042", "$120"], ["#abcdef", "$5"]]',
+      '    text "#123456" accent=#654321',
+      '  screen phone "B" #b',
+      '  flow a -> b "Go" color="#00AA55"',
+      '# board accent=#ff0000',
+      '  FLOW b -> a color=#C0FFEE',
+      '  flow a -> b color=#c0ffee1',
+    ].join("\n") });
+    const colors = await vscode.commands.executeCommand("vscode.executeDocumentColorProvider", d.uri);
+    const found = colors.map((c) => `${c.range.start.line}:${d.getText(c.range)}`).sort();
+    assert.deepEqual(found, ["0:#1a73e8", "5:#00AA55", "7:#C0FFEE"], "not in tables, text, ids, comments, components without a color prop, or 7-digit hex");
+    const accent = colors.find((c) => c.range.start.line === 0).color;
+    assert.deepEqual([accent.red, accent.green, accent.blue].map((v) => Math.round(v * 255)), [0x1a, 0x73, 0xe8]);
+    // picking a color in VS Code's picker writes six-digit hex back
+    const picked = await vscode.commands.executeCommand("vscode.executeColorPresentationProvider", new vscode.Color(1, 0.5, 0, 0.4), { uri: d.uri, range: colors[0].range });
+    assert.equal(picked[0].label, "#ff8000");
+  });
+
   await test("preview menu commands act on the previewed file: the title bar and … menu pass the panel, not a file", async () => {
     // Like the menus: VS Code passes the clicked editor's resource, here the webview panel's
     const panelUri = vscode.Uri.parse("webview-panel:webview-panel/webview-tsquare.preview-test");
