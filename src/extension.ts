@@ -6,6 +6,7 @@
  */
 import * as vscode from "vscode";
 import { boardLayout, compileWireframe, encodeWireframe, languageData, renderWireframePng, renderWireframeSvg } from "tsquare";
+import { colorProvider } from "./colors.js";
 import { completionProvider } from "./completions.js";
 
 const LANGUAGE = "tsquare";
@@ -49,9 +50,10 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.window.onDidChangeActiveTextEditor((editor) => { if (editor && isTsquare(editor.document)) previews.follow(editor.document); }),
   );
 
-  // ── Autocomplete ──
+  // ── Autocomplete and colors ──
   context.subscriptions.push(
     vscode.languages.registerCompletionItemProvider(LANGUAGE, completionProvider(languageData()), " ", "=", "[", ",", "{"),
+    vscode.languages.registerColorProvider(LANGUAGE, colorProvider),
   );
 
   // ── Commands ──

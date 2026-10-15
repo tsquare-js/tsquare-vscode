@@ -3,6 +3,7 @@
 Highlighting, problems and a live preview for [tsquare](https://tsquare.dev) wireframes (`.tsq` files). Not published yet.
 
 - **Language:** `.tsq` files open as tsquare, with highlighting, `#` line comments (Cmd+/), and autocomplete for components, props, option words, icons and accents.
+- **Colors:** the board's `accent=#…` and a flow's `color=#…` get a swatch and VS Code's color picker. Nothing else does: VS Code's default swatches are off, so an order number like `"#1042"` in a table isn't shown as a color.
 - **Problems:** the file is checked as you type. Each problem is a squiggle on its line and an entry in the Problems panel, with the same message `tsquare check` prints.
 - **Preview:** Open Preview to the Side (Cmd+K V, or the button in the editor's title bar), like Markdown's. It renders on your machine, with nothing sent anywhere, follows the active `.tsq` editor, and keeps the last valid render while there are problems. Zoom, pan and the screen chips come from `tsquare/viewer`, the playground's viewer. The zoom level is in the status bar; click it to fit the board.
 - **Commands** (the preview's `…` menu and the Command Palette): Copy Image Link (a tsquare.dev SVG link), Open in Playground, Export SVG, Export PNG.
