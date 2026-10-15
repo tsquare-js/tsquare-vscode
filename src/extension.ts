@@ -55,9 +55,11 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   // ── Commands ──
-  /** The document a command acts on: the active tsquare editor, else the active preview's source. */
+  /** The document a command acts on: the clicked file or preview, else the active tsquare editor, else the active preview's source. */
   const target = async (uri?: vscode.Uri) => {
-    if (uri instanceof vscode.Uri) return vscode.workspace.openTextDocument(uri);
+    // Menus pass the clicked resource: a .tsq file from the Explorer, or the panel itself
+    // (webview-panel:…) from the preview's title bar and … menu, which means the previewed file.
+    if (uri instanceof vscode.Uri) return uri.scheme === "webview-panel" ? previews.shownDocument() : vscode.workspace.openTextDocument(uri);
     const editor = vscode.window.activeTextEditor;
     if (editor && isTsquare(editor.document)) return editor.document;
     return previews.activeDocument();
@@ -190,6 +192,11 @@ class PreviewManager implements vscode.Disposable {
 
   activeDocument() {
     return this.panel?.active ? this.doc : undefined;
+  }
+
+  /** The file the preview shows, focused or not. */
+  shownDocument() {
+    return this.panel ? this.doc : undefined;
   }
 
   post(message: ToWebview) {
