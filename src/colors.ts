@@ -13,7 +13,7 @@ import * as vscode from "vscode";
  */
 const COLOR_PROPS: Record<string, string[]> = { board: ["accent"], flow: ["color"] };
 
-/** key=#rrggbb or key="#rrggbb"; tsquare accepts only six-digit hex. */
+/** key=#rrggbb, key="#rrggbb" or key='#rrggbb' (matching quotes); tsquare accepts only six-digit hex. */
 const HEX_VALUE = /(?<=^|\s)([\w-]+)\s*[=:]\s*(["']?)(#[0-9a-fA-F]{6})\2(?![\w-])/g;
 
 const toColor = (hex: string) =>

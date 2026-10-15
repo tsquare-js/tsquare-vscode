@@ -84,10 +84,15 @@ exports.run = async function run() {
       '# board accent=#ff0000',
       '  FLOW b -> a color=#C0FFEE',
       '  flow a -> b color=#c0ffee1',
+      "  flow b -> a color='#0000ff'",
+      "  flow a -> b color='#ff0000\"",
     ].join("\n") });
     const colors = await vscode.commands.executeCommand("vscode.executeDocumentColorProvider", d.uri);
     const found = colors.map((c) => `${c.range.start.line}:${d.getText(c.range)}`).sort();
-    assert.deepEqual(found, ["0:#1a73e8", "5:#00AA55", "7:#C0FFEE"], "not in tables, text, ids, comments, components without a color prop, or 7-digit hex");
+    assert.deepEqual(found, ["0:#1a73e8", "5:#00AA55", "7:#C0FFEE", "9:#0000ff"], "not in tables, text, ids, comments, components without a color prop, 7-digit hex, or mismatched quotes");
+    const quoted = await vscode.workspace.openTextDocument({ language: "tsquare", content: "board 'D' accent='#1a73e8'" });
+    const single = await vscode.commands.executeCommand("vscode.executeDocumentColorProvider", quoted.uri);
+    assert.deepEqual(single.map((c) => quoted.getText(c.range)), ["#1a73e8"], "a single-quoted accent");
     const accent = colors.find((c) => c.range.start.line === 0).color;
     assert.deepEqual([accent.red, accent.green, accent.blue].map((v) => Math.round(v * 255)), [0x1a, 0x73, 0xe8]);
     // picking a color in VS Code's picker writes six-digit hex back
