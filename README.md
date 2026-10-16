@@ -2,11 +2,15 @@
 
 Write [tsquare](https://tsquare.dev) wireframes in VS Code and see them as you type. tsquare is a small text language for UI wireframe boards: screens side by side, notes, flow arrows, in clean grayscale that drops into docs. It's easy for AI models to write, so this is also the quickest way to look at what one just wrote.
 
+![A tsquare file beside its live preview: a three-screen sign-up flow with arrows between the screens](images/screen1.png)
+
 ## Features
 
 - **Live preview beside the editor.** Open it with **Cmd+K V** (Ctrl+K V on Windows and Linux) or the preview button in the editor's title bar, like Markdown's. It follows the `.tsq` file you're editing. Zoom with a pinch or Ctrl/Cmd + scroll, drag to pan, and click a screen's name to zoom to it. The zoom level is in the status bar; click it to fit the board.
 - **Problems as you type.** Each mistake is underlined on its line and listed in the Problems panel, with a "did you mean" when there's a close match. While there are problems, the preview keeps the last board that worked.
+  ![A misspelled screen size underlined, its message in the Problems panel, and the preview dimmed with "1 problem · showing the last valid render"](images/screen2.png)
 - **Highlighting and autocomplete** for components, props, option values, icon names and colors. `#` comments toggle with Cmd+/.
+  ![Autocomplete after "screen phone": the screen's options and props](images/screen3.png)
 - **Colors** set with `accent=#…` on the board, or `color=#…` on a flow, get a swatch and VS Code's color picker.
 - **Export and share** from the preview's `…` menu or the Command Palette:
   - **Export SVG…** saves the board next to the file.
