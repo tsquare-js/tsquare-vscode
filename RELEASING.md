@@ -19,31 +19,15 @@ Before publishing, the workflow stops if the tag doesn't match the version in `p
 ## When a run fails
 
 - **Before publishing:** fix it on `main` and release the next patch version (a store never takes the same version twice).
-- **One store fails:** fix the setup below, then **Re-run failed jobs**. Both publish steps skip a version that's already there, so **Re-run all jobs** works too. The GitHub release waits for both stores.
+- **One store fails:** check that store's setup (below), then **Re-run failed jobs**. Both publish steps skip a version that's already there, so **Re-run all jobs** works too. The GitHub release waits for both stores.
 
-## One-time setup
+## How publishing is set up
 
-### GitHub
+Neither store holds a stored secret: both trust GitHub's OIDC token from this workflow.
 
-In the repo's **Settings → Environments**, create two environments: `marketplace-publish` and `openvsx-publish`. Leave them open to every branch for now: the Marketplace identity workflow (step 5 below) runs from `main`. Once both stores are set up, restrict them (**Deployment branches and tags → Selected branches and tags**, tag rule `v*`) so only release tags can use their credentials.
-
-### VS Code Marketplace
-
-Global Azure DevOps personal access tokens, the old way to publish, stop working on December 1, 2026. The workflow uses Microsoft Entra ID instead.
-
-1. **Publisher.** Create one at [marketplace.visualstudio.com/manage](https://marketplace.visualstudio.com/manage) with the ID `tsquare-js` (the `publisher` in `package.json`; if you pick another ID, change it there too). Display name: tsquare.
-2. **Managed identity.** In the [Azure portal](https://portal.azure.com) (any subscription; the free tier works), search for **Managed Identities** and create a user-assigned one, in any resource group and region. An app registration looks simpler and needs no subscription, but it's reported to sign in fine and then fail at publishing with `InvalidAccessException`.
-3. **Federated credential.** In the identity, **Settings → Federated credentials → Add credential**: scenario **GitHub Actions deploying Azure resources**, organization `tsquare-js`, repository `tsquare-vscode`, entity **Environment**, environment `marketplace-publish`. (Not Tag: that trusts one exact tag name.)
-4. **Secrets.** From the identity's **Settings → Properties**, copy the **Client ID** and **Tenant ID** into the `marketplace-publish` environment's secrets as `AZURE_CLIENT_ID` and `AZURE_TENANT_ID`.
-5. **The identity's Marketplace ID.** Run the **Marketplace identity** workflow (Actions tab → Marketplace identity → Run workflow; it's listed once this file's PR is on `main`, and needs `marketplace-publish` still open to `main`). Its last step prints an ID: that's the one the Marketplace knows the identity by, not the client, tenant or resource ID.
-6. **Membership.** In the publisher's **Members**, add that ID with the **Contributor** role.
-
-### Open VSX
-
-Open VSX takes the first version of an extension only with an access token; trusted publishing works from the second.
-
-1. **Account.** Sign in to [open-vsx.org](https://open-vsx.org) with GitHub, create an [Eclipse account](https://accounts.eclipse.org) with the same GitHub username, link it under **Settings**, and sign the **Publisher Agreement** there.
-2. **Token and namespace.** Under **Settings → Access Tokens**, create a token, then create the namespace with it: `npx ovsx create-namespace tsquare-js -p <token>`.
-3. **First release.** Add the token to the `openvsx-publish` environment's secrets as `OVSX_PAT`. Then restrict both environments to `v*` tags (see GitHub above) and release 0.1.0.
-4. **Trusted publishing.** After 0.1.0 is on Open VSX: **Settings → Trusted Publishers**, namespace `tsquare-js`, GitHub, owner `tsquare-js`, repository `tsquare-vscode`, workflow `release.yml`, environment `openvsx-publish`.
-5. **Remove the token.** Delete the `OVSX_PAT` secret (a token, when set, takes precedence over trusted publishing) and revoke the token on open-vsx.org.
+- **GitHub:** two environments, `marketplace-publish` and `openvsx-publish`, each limited to `v*` tags. The publish jobs run in them.
+- **VS Code Marketplace:** publisher `tsquare-js` (the `publisher` in `package.json`). An Azure user-assigned managed identity has a federated credential for this repo's `marketplace-publish` environment, and is a Contributor member of the publisher. Its client and tenant IDs are that environment's `AZURE_CLIENT_ID` and `AZURE_TENANT_ID` secrets; `vsce publish --azure-credential` signs in with it. Things that aren't obvious:
+  - The Marketplace knows the identity by its Azure DevOps profile ID, not its client, tenant or resource ID. The **Marketplace identity** workflow prints it (it needs the environment open to the branch it runs from).
+  - A managed identity, not an app registration: an app registration is reported to sign in and then fail at publishing with `InvalidAccessException`.
+  - Not a personal access token: global Azure DevOps tokens stopped working on December 1, 2026.
+- **Open VSX:** namespace `tsquare-js`, with a trusted publisher registered for owner `tsquare-js`, repository `tsquare-vscode`, workflow `release.yml`, environment `openvsx-publish` (open-vsx.org **Settings → Trusted Publishers**). Open VSX took the first version (0.1.0) only with an access token; the workflow still uses an `OVSX_PAT` secret if one is set, and a token, when set, takes precedence over trusted publishing, so there shouldn't be one.
