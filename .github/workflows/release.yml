@@ -1,8 +1,8 @@
 name: Release
 
-# Publishes the extension to Open VSX (and to the VS Code Marketplace, once an Azure identity is
-# set up; until then the VSIX is uploaded there by hand), then creates the GitHub release with
-# the VSIX, when a v* tag is pushed. Setup and how to cut a release: RELEASING.md.
+# When a v* tag is pushed: packages the VSIX, publishes it where that's set up (the VS Code
+# Marketplace once an Azure identity exists, until then by hand; Open VSX when the OPENVSX_PUBLISH
+# variable is "true"), then creates the GitHub release with the VSIX. RELEASING.md has the details.
 #
 # The package job runs dependency code (npm ci, the build) without any credential that can
 # publish. Each publish job holds only its own store's credential and publishes the packaged
@@ -120,6 +120,8 @@ jobs:
   openvsx:
     name: Publish to Open VSX
     needs: package
+    # Opt-in: runs only when the repository variable OPENVSX_PUBLISH is "true" (RELEASING.md)
+    if: vars.OPENVSX_PUBLISH == 'true'
     runs-on: ubuntu-latest
     environment: openvsx-publish
     permissions:
@@ -153,6 +155,8 @@ jobs:
   release:
     name: GitHub release
     needs: [marketplace, openvsx]
+    # after both stores; Open VSX may be skipped (not set up), but not failed
+    if: ${{ !cancelled() && needs.marketplace.result == 'success' && (needs.openvsx.result == 'success' || needs.openvsx.result == 'skipped') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
