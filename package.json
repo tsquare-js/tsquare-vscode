@@ -1,12 +1,35 @@
 {
   "name": "tsquare-vscode",
   "displayName": "tsquare",
-  "description": "Highlighting, problems and a live preview for tsquare wireframes (.tsq).",
-  "version": "0.0.1",
+  "description": "Write tsquare UI wireframes with a live preview, problems as you type, highlighting and autocomplete.",
+  "version": "0.1.0",
   "publisher": "tsquare-js",
   "private": true,
   "license": "MIT",
   "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#032D7B",
+    "theme": "dark"
+  },
+  "preview": true,
+  "pricing": "Free",
+  "keywords": [
+    "tsquare",
+    "tsq",
+    "wireframe",
+    "wireframes",
+    "mockup",
+    "mockups",
+    "ui",
+    "ux",
+    "prototype",
+    "screens",
+    "diagram",
+    "design",
+    "sketch",
+    "ai",
+    "llm"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/tsquare-js/tsquare-vscode"
@@ -93,7 +116,7 @@
       },
       {
         "command": "tsquare.exportSvg",
-        "title": "Export SVG…",
+        "title": "Export SVG\u2026",
         "category": "tsquare"
       },
       {

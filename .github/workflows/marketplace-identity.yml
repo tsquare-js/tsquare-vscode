@@ -1,0 +1,27 @@
+name: Marketplace identity
+
+# Run by hand once during setup (RELEASING.md, step 5): prints the ID the VS Code Marketplace
+# knows the Azure managed identity by, to add it as a member of the publisher. That ID isn't
+# the identity's client ID, tenant ID or resource ID; Azure DevOps keeps its own.
+
+on: workflow_dispatch
+
+permissions: {}
+
+jobs:
+  identity:
+    if: github.repository == 'tsquare-js/tsquare-vscode'
+    runs-on: ubuntu-latest
+    environment: marketplace-publish
+    permissions:
+      id-token: write
+    steps:
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
+      # 499b84ac-… is Azure DevOps' application ID, the resource the Marketplace runs on
+      - name: The ID to add under the publisher's Members
+        run: az rest -u https://app.vssps.visualstudio.com/_apis/profile/profiles/me --resource 499b84ac-1321-427f-aa17-267ca6975798 --query id -o tsv

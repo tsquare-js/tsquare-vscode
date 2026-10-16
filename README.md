@@ -1,45 +1,43 @@
 # tsquare for VS Code
 
-Highlighting, problems and a live preview for [tsquare](https://tsquare.dev) wireframes (`.tsq` files). Not published yet.
+Write [tsquare](https://tsquare.dev) wireframes in VS Code and see them as you type. tsquare is a small text language for UI wireframe boards: screens side by side, notes, flow arrows, in clean grayscale that drops into docs. It's easy for AI models to write, so this is also the quickest way to look at what one just wrote.
 
-- **Language:** `.tsq` files open as tsquare, with highlighting, `#` line comments (Cmd+/), and autocomplete for components, props, option words, icons and accents.
-- **Colors:** the board's `accent=#…` and a flow's `color=#…` get a swatch and VS Code's color picker. Nothing else does: VS Code's default swatches are off, so an order number like `"#1042"` in a table isn't shown as a color.
-- **Problems:** the file is checked as you type. Each problem is a squiggle on its line and an entry in the Problems panel, with the same message `tsquare check` prints.
-- **Preview:** Open Preview to the Side (Cmd+K V, or the button in the editor's title bar), like Markdown's. It renders on your machine, with nothing sent anywhere, follows the active `.tsq` editor, and keeps the last valid render while there are problems. Zoom, pan and the screen chips come from `tsquare/viewer`, the playground's viewer. The zoom level is in the status bar; click it to fit the board.
-- **Commands** (the preview's `…` menu and the Command Palette): Copy Image Link (a tsquare.dev SVG link; change `/svg/` to `/png/` for a PNG), Open in Playground, Export SVG.
+## Features
 
-## How it relates to tsquare
+- **Live preview beside the editor.** Open it with **Cmd+K V** (Ctrl+K V on Windows and Linux) or the preview button in the editor's title bar, like Markdown's. It follows the `.tsq` file you're editing. Zoom with a pinch or Ctrl/Cmd + scroll, drag to pan, and click a screen's name to zoom to it. The zoom level is in the status bar; click it to fit the board.
+- **Problems as you type.** Each mistake is underlined on its line and listed in the Problems panel, with a "did you mean" when there's a close match. While there are problems, the preview keeps the last board that worked.
+- **Highlighting and autocomplete** for components, props, option values, icon names and colors. `#` comments toggle with Cmd+/.
+- **Colors** set with `accent=#…` on the board, or `color=#…` on a flow, get a swatch and VS Code's color picker.
+- **Export and share** from the preview's `…` menu or the Command Palette:
+  - **Export SVG…** saves the board next to the file.
+  - **Copy Image Link** copies a tsquare.dev image link that works anywhere an image does (Notion, GitHub, docs). Change `/svg/` to `/png/` in it for a PNG.
+  - **Open in Playground** opens the wireframe in the tsquare.dev playground.
 
-The extension depends on the [`tsquare`](https://www.npmjs.com/package/tsquare) package, pinned to one release, and gets everything from it: parsing and checking, rendering (`renderWireframeSvg`, `boardLayout`), autocomplete data (`languageData`), share links (`encodeWireframe`) and the preview's viewer (`tsquare/viewer`). The language itself lives in the [tsquare repo](https://github.com/tsquare-js/tsquare). Only the highlighting grammar (`syntaxes/`) is written here, and its test runs over every example shipped with the pinned version, so a language change shows up as a failing test when the pin is bumped.
+## Getting started
 
-## Develop
+Create a file ending in `.tsq`, for example `login.tsq`:
 
-```bash
-npm install
-npm run build
+```
+board "Login"
+  screen phone "Sign in"
+    heading "Welcome back"
+    input "Email" placeholder="you@example.com"
+    input password "Password"
+    button primary "Sign in" fullWidth
 ```
 
-Open this folder in VS Code and press F5. That opens a second window with the extension loaded and tsquare's examples open. Or launch it from a terminal:
+Press **Cmd+K V** to see it. The [docs](https://tsquare.dev/docs) cover the language and every component; the [playground](https://tsquare.dev/playground) has examples.
 
-```bash
-"/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code" --extensionDevelopmentPath="$PWD" node_modules/tsquare/examples
-```
+## Privacy
 
-**Package** a VSIX (about 565 KB, one file for every platform):
+The preview, problems and SVG export run on your machine; nothing is sent anywhere. Copy Image Link and Open in Playground make tsquare.dev links that contain your wireframe's text, so opening one sends that text to tsquare.dev to render it. See the [privacy page](https://tsquare.dev/privacy).
 
-```bash
-npm run package
-```
+## Links
 
-It builds a production bundle first (`vscode:prepublish`): tsquare and its dependencies are bundled into `dist/extension.js`, the two Inter font files tsquare reads from disk go in `dist/node_modules/@fontsource/inter/` with the font's license, and `dist/THIRD_PARTY_LICENSES.txt` collects the license, any NOTICE file, and where the source is for every bundled package. A package that ships no license file needs its notice in `licenses/<name>.txt` (with where it comes from), or the build stops. `.vscodeignore` keeps sources, tests and `node_modules` out. Install the result with **Extensions: Install from VSIX…**, or `code --install-extension tsquare-vscode-<version>.vsix`. CI builds one on every push (the run's `vsix` artifact).
-
-Tests: `npm test` runs the typecheck, the grammar test (`test/grammar.mjs`, with VS Code's TextMate engine) and an integration test in your installed VS Code (`test/run.mjs`: a throwaway profile, nothing downloaded; set `VSCODE_BIN` to use another build). `npm run test:vsix` packages the VSIX, unpacks it outside the repo, checks what's inside, and runs the same integration tests against it. It needs macOS or Linux (it uses `unzip` and a local VS Code); the VSIX itself works everywhere. CI runs the typecheck and the grammar test.
-
-## Not done yet
-
-- **tsquare code blocks in Markdown files**, in VS Code's Markdown preview.
-- **Publishing:** a VS Code Marketplace publisher and an Open VSX account.
+- [tsquare docs](https://tsquare.dev/docs) and [playground](https://tsquare.dev/playground)
+- [The tsquare library and CLI](https://github.com/tsquare-js/tsquare)
+- [Issues](https://github.com/tsquare-js/tsquare-vscode/issues) and [contributing](https://github.com/tsquare-js/tsquare-vscode/blob/main/CONTRIBUTING.md)
 
 ## License
 
-MIT
+MIT. The extension bundles third-party packages; their licenses are in `dist/THIRD_PARTY_LICENSES.txt` inside the extension.

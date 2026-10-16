@@ -1,0 +1,152 @@
+name: Release
+
+# Publishes the extension to the VS Code Marketplace and Open VSX, then creates the GitHub
+# release with the VSIX, when a v* tag is pushed. Setup and how to cut a release: RELEASING.md.
+#
+# The package job runs dependency code (npm ci, the build) without any credential that can
+# publish. Each publish job holds only its own store's credential and publishes the packaged
+# VSIX: no checkout, no npm ci.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions: {} # nothing by default; each job asks for what it needs
+
+env:
+  VSCE: "@vscode/vsce@4.0.0" # the publishing tools, pinned
+  OVSX: "ovsx@1.2.0"
+
+jobs:
+  package:
+    name: Check and package
+    if: github.repository == 'tsquare-js/tsquare-vscode'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history, to check the tagged commit is on main
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check the tag, the version and the changelog
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME doesn't match the version in package.json ($version)."
+            exit 1
+          fi
+          if ! git merge-base --is-ancestor HEAD origin/main; then
+            echo "::error::$GITHUB_REF_NAME is on a commit that isn't on main. Merge the release PR first, then tag main."
+            exit 1
+          fi
+
+          # The release notes are the "## <version>" section of CHANGELOG.md, up to the next
+          # "## " heading outside a code block.
+          mkdir -p "$RUNNER_TEMP/release"
+          awk -v heading="## $version" '
+            /^```/ { fence = !fence }
+            !fence && /^## / { if (found) exit; found = ($0 == heading); next }
+            found
+          ' CHANGELOG.md > "$RUNNER_TEMP/release/notes.md"
+          if ! grep -q '[^[:space:]]' "$RUNNER_TEMP/release/notes.md"; then
+            echo "::error file=CHANGELOG.md::CHANGELOG.md has no \"## $version\" section, or it's empty."
+            exit 1
+          fi
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run test:grammar
+
+      - name: Package
+        run: npx vsce package --no-dependencies --out "$RUNNER_TEMP/release/tsquare-vscode-${GITHUB_REF_NAME#v}.vsix"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release
+          path: ${{ runner.temp }}/release/
+          if-no-files-found: error
+
+  marketplace:
+    name: Publish to the VS Code Marketplace
+    needs: package
+    runs-on: ubuntu-latest
+    # The Azure managed identity trusts tokens from this environment only (RELEASING.md)
+    environment: marketplace-publish
+    permissions:
+      id-token: write # GitHub OIDC token, exchanged for an Entra ID token: no stored secret
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release
+          path: ${{ runner.temp }}/release
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
+      - name: Publish
+        # --skip-duplicate: a rerun after a later job failed doesn't fail here
+        run: npx --yes "$VSCE" publish --packagePath "$RUNNER_TEMP"/release/*.vsix --azure-credential --skip-duplicate
+
+  openvsx:
+    name: Publish to Open VSX
+    needs: package
+    runs-on: ubuntu-latest
+    environment: openvsx-publish
+    permissions:
+      id-token: write # trusted publishing: Open VSX trades a GitHub OIDC token for a short-lived one
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release
+          path: ${{ runner.temp }}/release
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Open VSX needs the first version published with an access token. Set OVSX_PAT for that
+      # release only; after it, register this workflow as a trusted publisher and delete the
+      # secret (a token, when set, takes precedence over trusted publishing).
+      - name: Publish
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        run: |
+          vsix=$(ls "$RUNNER_TEMP"/release/*.vsix)
+          if [ -n "$OVSX_PAT" ]; then
+            echo "Publishing with the OVSX_PAT token. Delete it once trusted publishing is set up (RELEASING.md)."
+            npx --yes "$OVSX" publish "$vsix" --skip-duplicate
+          else
+            unset OVSX_PAT
+            npx --yes "$OVSX" publish "$vsix" --skip-duplicate --trusted-publishing
+          fi
+
+  release:
+    name: GitHub release
+    needs: [marketplace, openvsx]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release
+          path: ${{ runner.temp }}/release
+
+      - name: Create the release, with the VSIX attached
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file "$RUNNER_TEMP/release/notes.md" "$RUNNER_TEMP"/release/*.vsix

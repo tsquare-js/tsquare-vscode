@@ -10,3 +10,7 @@ licenses/**
 dist/**/*.map
 *.vsix
 .gitignore
+RELEASING.md
+CONTRIBUTING.md
+images/**
+**/*.tsq
