@@ -1,7 +1,8 @@
 name: Release
 
-# Publishes the extension to the VS Code Marketplace and Open VSX, then creates the GitHub
-# release with the VSIX, when a v* tag is pushed. Setup and how to cut a release: RELEASING.md.
+# Publishes the extension to Open VSX (and to the VS Code Marketplace, once an Azure identity is
+# set up; until then the VSIX is uploaded there by hand), then creates the GitHub release with
+# the VSIX, when a v* tag is pushed. Setup and how to cut a release: RELEASING.md.
 #
 # The package job runs dependency code (npm ci, the build) without any credential that can
 # publish. Each publish job holds only its own store's credential and publishes the packaged
@@ -76,27 +77,43 @@ jobs:
     name: Publish to the VS Code Marketplace
     needs: package
     runs-on: ubuntu-latest
-    # The Azure managed identity trusts tokens from this environment only (RELEASING.md)
+    # Automated only once an Azure managed identity is set up (RELEASING.md). Until then this job
+    # leaves a notice, and the VSIX is uploaded to the Marketplace by hand from the GitHub release.
     environment: marketplace-publish
     permissions:
       id-token: write # GitHub OIDC token, exchanged for an Entra ID token: no stored secret
     steps:
-      - uses: actions/download-artifact@v4
+      - name: Check for the Azure identity
+        id: azure
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+        run: |
+          if [ -n "$AZURE_CLIENT_ID" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice title=VS Code Marketplace::Not published automatically (no Azure identity). Upload the VSIX from the GitHub release on the publisher page: RELEASING.md, step 4."
+          fi
+
+      - if: steps.azure.outputs.ready == 'true'
+        uses: actions/download-artifact@v4
         with:
           name: release
           path: ${{ runner.temp }}/release
 
-      - uses: actions/setup-node@v4
+      - if: steps.azure.outputs.ready == 'true'
+        uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - uses: azure/login@v2
+      - if: steps.azure.outputs.ready == 'true'
+        uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           allow-no-subscriptions: true
 
       - name: Publish
+        if: steps.azure.outputs.ready == 'true'
         # --skip-duplicate: a rerun after a later job failed doesn't fail here
         run: npx --yes "$VSCE" publish --packagePath "$RUNNER_TEMP"/release/*.vsix --azure-credential --skip-duplicate
 
