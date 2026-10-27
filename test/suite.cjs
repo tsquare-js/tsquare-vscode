@@ -2,7 +2,7 @@
 const vscode = require("vscode");
 const assert = require("node:assert/strict");
 const path = require("node:path");
-const { encodeWireframe } = require("tsquare");
+const { compileWireframe, encodeWireframe, renderWireframeSvg } = require("tsquare");
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function until(fn, what, ms = 8000) {
@@ -64,6 +64,20 @@ exports.run = async function run() {
     await vscode.window.showTextDocument(other, vscode.ViewColumn.One);
     try { await until(() => ext.exports.lastPreview()?.width && ext.exports.lastPreview().width !== before, "a new render"); }
     catch (e) { throw new Error(`${e.message}; last=${JSON.stringify(ext.exports.lastPreview())} before=${before} active=${vscode.window.activeTextEditor?.document.fileName}`); }
+  });
+
+  await test("the preview's size is the board's as drawn, also when notes wrap differently than their length suggests", async () => {
+    // a notes-only row in a grid: tsquare's boardLayout estimates note heights; measureBoardLayout measures them
+    const wide = "WARNING: MANDATORY REVIEW WINDOW MUST MATCH WORKFLOW WWW MMM QA APPROVAL ".repeat(3).trim();
+    const content = ["board layout=grid columns=2", '  screen phone "Top"', `  note "${wide}"`, `  note "${wide}"`, '  note "Short"', '  screen phone "Below"'].join("\n");
+    const svg = await renderWireframeSvg(compileWireframe(content).spec, { skipValidation: true });
+    const [, width, height] = svg.match(/^<svg width="(\d+)" height="(\d+)"/).map(Number);
+    const notes = await vscode.workspace.openTextDocument({ language: "tsquare", content });
+    await vscode.window.showTextDocument(notes, vscode.ViewColumn.One);
+    await until(() => ext.exports.lastPreview()?.height === height && ext.exports.lastPreview(), `a ${width}×${height} render (last ${JSON.stringify(ext.exports.lastPreview())})`);
+    assert.equal(ext.exports.lastPreview().width, width);
+    await vscode.commands.executeCommand("workbench.action.revertAndCloseActiveEditor");
+    await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(path.join(examples, "notes-mobile.tsq")), vscode.ViewColumn.One);
   });
 
   await test("problems leave the last render up and report a count", async () => {
