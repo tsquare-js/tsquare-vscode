@@ -5,7 +5,7 @@
  * opens a link.
  */
 import * as vscode from "vscode";
-import { boardLayout, compileWireframe, encodeWireframe, languageData, renderWireframeSvg } from "tsquare";
+import { compileWireframe, encodeWireframe, languageData, measureBoardLayout, renderWireframeSvg } from "tsquare";
 import { colorProvider } from "./colors.js";
 import { completionProvider } from "./completions.js";
 
@@ -212,9 +212,9 @@ class PreviewManager implements vscode.Disposable {
       return this.post({ type: "problems", count: issues.length });
     }
     try {
-      const svg = await renderWireframeSvg(spec, { skipValidation: true });
+      // the exact layout (notes measured as drawn), so the image's size and the screen buttons match the SVG
+      const [svg, { width, height, items }] = await Promise.all([renderWireframeSvg(spec, { skipValidation: true }), measureBoardLayout(spec)]);
       if (mine !== this.seq) return; // a newer edit is already rendering
-      const { width, height, items } = boardLayout(spec);
       this.last = { width, height };
       this.post({ type: "render", svg, width, height, items });
     } catch (err) {

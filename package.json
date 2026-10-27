@@ -2,7 +2,7 @@
   "name": "tsquare-vscode",
   "displayName": "tsquare",
   "description": "Write tsquare UI wireframes with a live preview, problems as you type, highlighting and autocomplete.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "tsquare-js",
   "private": true,
   "license": "MIT",
@@ -116,7 +116,7 @@
       },
       {
         "command": "tsquare.exportSvg",
-        "title": "Export SVG\u2026",
+        "title": "Export SVG…",
         "category": "tsquare"
       },
       {
@@ -211,7 +211,7 @@
     "@types/vscode": "^1.90.0",
     "@vscode/vsce": "4.0.0",
     "esbuild": "^0.28.2",
-    "tsquare": "0.9.1",
+    "tsquare": "0.13.2",
     "typescript": "^5.9.0",
     "vscode-oniguruma": "^2.0.1",
     "vscode-textmate": "^9.3.2"

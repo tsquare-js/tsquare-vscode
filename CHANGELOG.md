@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.0
+
+- **Built on tsquare 0.13.2** (it was 0.9.1). The preview gets tsquare's renderer fixes since then: content taller than its screen no longer hides a toast or tab bar or pushes a modal or bottom sheet down, a screen name wider than its screen ends in "…" instead of pushing the screens after it off the board, and notes on the board are laid out at the height they're drawn at (a row of notes in a grid no longer moves the screens below it or sends a flow arrow across a screen). The language hasn't changed.
+- **The preview's size and its screen buttons match the board** on boards with notes: they come from tsquare's `measureBoardLayout`, which measures notes as drawn, instead of an estimate that could be a line or more off.
+
 ## 0.1.0
 
 The first release.
