@@ -1,5 +1,8 @@
 # tsquare for VS Code
 
+[![CI](https://github.com/tsquare-js/tsquare-vscode/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/tsquare-js/tsquare-vscode/actions/workflows/ci.yml)
+[![Open VSX](https://img.shields.io/open-vsx/v/tsquare-js/tsquare-vscode)](https://open-vsx.org/extension/tsquare-js/tsquare-vscode)
+
 Write [tsquare](https://tsquare.dev) wireframes in VS Code and see them as you type. tsquare is a small text language for UI wireframe boards: screens side by side, notes, flow arrows, in clean grayscale that drops into docs. It's easy for AI models to write, so this is also the quickest way to look at what one just wrote.
 
 ![A tsquare file beside its live preview: a three-screen sign-up flow with arrows between the screens](images/screen1.png)
