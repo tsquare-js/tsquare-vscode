@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1
+
+- **Built on tsquare 0.14.4** (it was 0.13.2). The preview gets tsquare's fix for fields side by side: in a row of labeled inputs or selects where one is taller than the other (helper text, an error message, several lines), the shorter one was centered against it and sat a few pixels lower; now they line up at the top. Fields without a label stay centered, and other boards draw as before. The language hasn't changed.
+
 ## 0.2.0
 
 - **Built on tsquare 0.13.2** (it was 0.9.1). The preview gets tsquare's renderer fixes since then: content taller than its screen no longer hides a toast or tab bar or pushes a modal or bottom sheet down, a screen name wider than its screen ends in "…" instead of pushing the screens after it off the board, and notes on the board are laid out at the height they're drawn at (a row of notes in a grid no longer moves the screens below it or sends a flow arrow across a screen). The language hasn't changed.
