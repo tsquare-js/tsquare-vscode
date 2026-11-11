@@ -2,7 +2,7 @@
   "name": "tsquare-vscode",
   "displayName": "tsquare",
   "description": "Write tsquare UI wireframes with a live preview, problems as you type, highlighting and autocomplete.",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "publisher": "tsquare-js",
   "private": true,
   "license": "MIT",
@@ -211,7 +211,7 @@
     "@types/vscode": "^1.90.0",
     "@vscode/vsce": "4.0.0",
     "esbuild": "^0.28.2",
-    "tsquare": "0.14.4",
+    "tsquare": "0.14.5",
     "typescript": "^5.9.0",
     "vscode-oniguruma": "^2.0.1",
     "vscode-textmate": "^9.3.2"
